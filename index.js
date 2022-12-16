@@ -1,4 +1,4 @@
-THREE.TrackballControls = TrackballControls; //Link module to Three
+THREE.TrackballControls = TrackballControls;
 
 const Graph = ForceGraph3D()
 	(document.getElementById("3d-graph"));
@@ -12,6 +12,6 @@ let toggleData;
 	curDataSetIdx = curDataSetIdx === undefined ? 0 : (curDataSetIdx+1)%dataSets.length;
 	const dataSet = dataSets[curDataSetIdx];
 
-	dataSet(Graph); // Load data set
+	dataSet(Graph);
 	document.getElementById('graph-data-description').innerHTML = dataSet.description ? `Viewing ${dataSet.description}` : '';
-})(); // IIFE init
+})();

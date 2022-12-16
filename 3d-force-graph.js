@@ -1,7 +1,6 @@
 function ForceGraph3D() {
 
 	const CAMERA_DISTANCE2NODES_FACTOR = 150;
-
 	class CompProp {
 		constructor(name, initVal = null, redigest = true, onChange = newVal => {}) {
 			this.name = name;
@@ -103,6 +102,7 @@ function ForceGraph3D() {
 			env.raycaster.setFromCamera(env.mouse, env.camera);
 			const intersects = env.raycaster.intersectObjects(env.scene.children);
 			env.toolTipElem.innerHTML = intersects.length ? intersects[0].object.name || '' : '';
+//			env.toolTipElem.innerHTML = intersects.length ? intersects[0].nodes.name || '' : '';
 
 			// Frame cycle
 			env.controls.update();

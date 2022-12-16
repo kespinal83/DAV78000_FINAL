@@ -1,7 +1,7 @@
 function getGraphDataSets() {
 
     // Color brewer paired set
-    const colors = ['#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000'];
+    const colors = ['#FF0000','#Fe100','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000'];
 
     const loadGroups = function(Graph) {
         qwest.get('groups.json').then((_, data) => {
