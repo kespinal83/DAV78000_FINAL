@@ -10,7 +10,7 @@ function ForceGraph3D() {
 		}
 	}
 
-	const env = { // Holds component state
+	const env = {
 		initialised: false,
 		onFrame: () => {}
 	};
@@ -20,40 +20,35 @@ function ForceGraph3D() {
 		new CompProp('height', window.innerHeight),
 		new CompProp('graphData', {
 			nodes: { 1: { name: 'mock', val: 1 } },
-			links: [[1, 1]] // [from, to]
+			links: [[1, 1]]
 		}),
-		new CompProp('nodeRelSize', 4), // volume per val unit
+		new CompProp('nodeRelSize', 4), 
 		new CompProp('lineOpacity', 0.2),
 		new CompProp('valAccessor', node => node.val),
 		new CompProp('nameAccessor', node => node.name),
 		new CompProp('colorAccessor', node => node.color),
-		new CompProp('initialEngineTicks', 0), // how many times to tick the force engine at init before starting to render
-		new CompProp('maxConvergeTime', 15000), // ms
+		new CompProp('initialEngineTicks', 0), 
+		new CompProp('maxConvergeTime', 15000),
 		new CompProp('maxConvergeFrames', 300)
 	];
 
 	function initStatic() {
-		// Wipe DOM
 		env.domNode.innerHTML = '';
 
-		// Add nav info section
 		const navInfo = document.createElement('div');
 		navInfo.classList.add('graph-nav-info');
 		navInfo.innerHTML = "MOVE mouse &amp; press LEFT/A: rotate, MIDDLE/S: zoom, RIGHT/D: pan";
 		env.domNode.appendChild(navInfo);
 
-		// Setup tooltip
 		env.toolTipElem = document.createElement('div');
 		env.toolTipElem.classList.add('graph-tooltip');
 		env.domNode.appendChild(env.toolTipElem);
 
-		// Capture mouse coords on move
 		env.raycaster = new THREE.Raycaster();
 		env.mouse = new THREE.Vector2();
-		env.mouse.x = -2; // Initialize off canvas
+		env.mouse.x = -2;
 		env.mouse.y = -2;
 		env.domNode.addEventListener("mousemove", ev => {
-			// update the mouse pos
 			const offset = getOffset(env.domNode),
 				relPos = {
 					x: ev.pageX - offset.left,
@@ -62,7 +57,6 @@ function ForceGraph3D() {
 			env.mouse.x = (relPos.x / env.width) * 2 - 1;
 			env.mouse.y = -(relPos.y / env.height) * 2 + 1;
 
-			// Move tooltip
 			env.toolTipElem.style.top = (relPos.y - 40) + 'px';
 			env.toolTipElem.style.left = (relPos.x - 20) + 'px';
 
@@ -74,37 +68,22 @@ function ForceGraph3D() {
 			}
 		}, false);
 
-		// Setup camera
 		env.camera = new THREE.PerspectiveCamera();
 		env.camera.far = 20000;
 		env.camera.position.z = 1000;
-
-		// Setup scene
 		env.scene = new THREE.Scene();
-
-		// Setup renderer
 		env.renderer = new THREE.WebGLRenderer();
 		env.domNode.appendChild(env.renderer.domElement);
-
-		// Add camera interaction
 		env.controls = new THREE.TrackballControls(env.camera, env.renderer.domElement);
-
-
 		env.initialised = true;
 
-		//
-
-		// Kick-off renderer
-		(function animate() { // IIFE
+		(function animate() {
 			env.onFrame();
 
-			// Update tooltip
 			env.raycaster.setFromCamera(env.mouse, env.camera);
 			const intersects = env.raycaster.intersectObjects(env.scene.children);
 			env.toolTipElem.innerHTML = intersects.length ? intersects[0].object.name || '' : '';
-//			env.toolTipElem.innerHTML = intersects.length ? intersects[0].nodes.name || '' : '';
-
-			// Frame cycle
+//			env.toolTipElem.innerHTML = intersects.length ? intersects[0].graphData.nodes.name || '' : '';
 			env.controls.update();
 			env.renderer.render(env.scene, env.camera);
 			requestAnimationFrame(animate);
@@ -113,13 +92,10 @@ function ForceGraph3D() {
 
 	function digest() {
 		if (!env.initialised) { return }
+			resizeCanvas();
 
-		resizeCanvas();
-
-		env.onFrame = ()=>{}; // Clear previous frame hook
-		env.scene = new THREE.Scene(); // Clear the place
-
-		// Build graph with data
+		env.onFrame = ()=>{};
+		env.scene = new THREE.Scene();
 		const graph = ngraph.graph();
 		for (let nodeId in env.graphData.nodes) {
 			graph.addNode(nodeId, env.graphData.nodes[nodeId]);
@@ -128,9 +104,6 @@ function ForceGraph3D() {
 			graph.addLink(...link, {});
 		}
 
-		// console.log('graph from 3d-force-graph', graph);
-
-		// Add WebGL objects
 		graph.forEachNode(node => {
 			const nodeMaterial = new THREE.MeshBasicMaterial({ color: env.colorAccessor(node.data) || 0xffffaa, transparent: true });
 			nodeMaterial.opacity = 0.75;
@@ -160,11 +133,9 @@ function ForceGraph3D() {
 		env.camera.lookAt(env.scene.position);
 		env.camera.position.z = Math.cbrt(Object.keys(env.graphData.nodes).length) * CAMERA_DISTANCE2NODES_FACTOR;
 
-		// Add force-directed layout
 		const layout = ngraph.forcelayout3d(graph);
 
-		for (let i=0; i<env.initialEngineTicks; i++) { layout.step(); } // Initial ticks before starting to render
-
+		for (let i=0; i<env.initialEngineTicks; i++) { layout.step(); }
 		let cntTicks = 0;
 		const startTickTime = new Date();
 		env.onFrame = layoutTick;
@@ -181,12 +152,11 @@ function ForceGraph3D() {
 
 		function layoutTick() {
 			if (cntTicks++ > env.maxConvergeFrames || (new Date()) - startTickTime > env.maxConvergeTime) {
-				env.onFrame = ()=>{}; // Stop ticking graph
+				env.onFrame = ()=>{};
 			}
 
-			layout.step(); // Tick it
+			layout.step();
 
-			// Update nodes position
 			graph.forEachNode(node => {
 				const sphere = node.data.sphere,
 					pos = layout.getNodePosition(node.id);
@@ -196,7 +166,6 @@ function ForceGraph3D() {
 				sphere.position.z = pos.z;
 			});
 
-			// Update links position
 			graph.forEachLink(link => {
 				const line = link.data.line,
 					pos = layout.getLinkPosition(link.id);
@@ -211,7 +180,6 @@ function ForceGraph3D() {
 		}
 	}
 
-	// Component constructor
 	function chart(nodeElement) {
 		env.domNode = nodeElement;
 
@@ -221,7 +189,6 @@ function ForceGraph3D() {
 		return chart;
 	}
 
-	// Getter/setter methods
 	exposeProps.forEach(prop => {
 		chart[prop.name] = getSetEnv(prop.name, prop.redigest, prop.onChange);
 		env[prop.name] = prop.initVal;
@@ -238,7 +205,6 @@ function ForceGraph3D() {
 		}
 	});
 
-	// Reset to default state
 	chart.resetState = function() {
 		this.graphData({nodes: [], links: []})
 			.nodeRelSize(4)
@@ -247,13 +213,13 @@ function ForceGraph3D() {
 			.nameAccessor(node => node.name)
 			.colorAccessor(node => node.color)
 			.initialEngineTicks(0)
-			.maxConvergeTime(15000) // ms
+			.maxConvergeTime(15000) 
 			.maxConvergeFrames(300);
 
 		return this;
 	};
 
-	chart.resetState(); // Set defaults at instantiation
+	chart.resetState(); 
 
 	return chart;
 }

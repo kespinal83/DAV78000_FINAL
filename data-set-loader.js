@@ -1,7 +1,6 @@
 function getGraphDataSets() {
 
-    // Color brewer paired set
-    const colors = ['#FF0000','#Fe100','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000','#FF0000'];
+    const colors = ['#FF0000'];  //Stranger Things Logo RED
 
     const loadGroups = function(Graph) {
         qwest.get('groups.json').then((_, data) => {
@@ -27,7 +26,7 @@ function getGraphDataSets() {
                 });
         });
     };
-    loadGroups.description = "<em>Stranger Things</em> data (<a href='https://upload.wikimedia.org/wikipedia/commons/3/38/Stranger_Things_logo.png'>Stranger Things</a>)";
+    loadGroups.description = "<em>Stranger Things Script</em> data (<a href='https://upload.wikimedia.org/wikipedia/commons/3/38/Stranger_Things_logo.png'>Stranger Things</a>)";
 
     //
 
