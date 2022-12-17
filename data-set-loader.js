@@ -3,7 +3,7 @@ function getGraphDataSets() {
     const colors = ['#FF0000'];  //Stranger Things Logo RED
 
     const loadGroups = function(Graph) {
-        qwest.get('groups.json').then((_, data) => {
+        qwest.get('stdata.json').then((_, data) => {
             const nodes = {};
 
             data.nodes.forEach((node, i) => { 
